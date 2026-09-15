@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Drone Lab — an English-language technology archive covering autonomous flight, AI vision, SLAM, swarm intelligence, edge AI, flight stacks and real-world UAV applications.">
+<title>DRONE LAB — Autonomous Systems Archive</title>
+
+<style>
+:root{
+  --bg:#03101a;
+  --bg2:#061824;
+  --panel:#071b29;
+  --line:rgba(93,196,231,.28);
+  --cyan:#16d9ff;
+  --cyan2:#73efff;
+  --green:#20f5a0;
+  --text:#e8f6fb;
+  --muted:#8ba8b6;
+  --muted2:#5f7b89;
+  --max:1440px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:-3;
+  background:
+    linear-gradient(rgba(23,214,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(23,214,255,.045) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:linear-gradient(to bottom,black,transparent 92%);
+}
+body:after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:100% 4px;opacity:.18;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;width:100%;height:100%;object-fit:cover}
+.container{width:min(var(--max),92vw);margin:auto}
+.section{padding:76px 0;border-top:1px solid rgba(93,196,231,.08)}
+.eyebrow{
+  color:var(--cyan);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;font-weight:700;
+}
+.section-title{
+  font-size:clamp(28px,3vw,42px);margin-top:7px;line-height:1.05;
+}
+.section-subtitle{
+  color:var(--muted);max-width:720px;line-height:1.7;margin-top:10px;font-size:14px;
+}
+
+/* NAV */
+.nav{
+  position:fixed;z-index:100;top:0;left:0;right:0;height:74px;
+  background:rgba(2,12,20,.78);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(93,196,231,.12);
+}
+.nav-inner{height:100%;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}
+.brand-mark{
+  width:26px;height:26px;position:relative;
+}
+.brand-mark:before,.brand-mark:after{
+  content:"";position:absolute;inset:3px;border:2px solid var(--cyan);
+  transform:rotate(45deg);border-radius:5px;
+}
+.brand-mark:after{inset:9px;border-color:var(--green);transform:rotate(0)}
+.nav-links{display:flex;gap:30px;height:100%;align-items:center}
+.nav-links a{font-size:12px;color:#9db4c0;position:relative}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+.nav-links a.active:after{
+  content:"";position:absolute;height:2px;background:var(--cyan);left:0;right:0;bottom:-28px;
+}
+.system{font-size:10px;color:#8ea6b3;letter-spacing:.05em}
+.system b{color:var(--green);border:1px solid rgba(32,245,160,.35);padding:5px 8px;margin-left:5px}
+
+/* HERO */
+.hero{
+  min-height:650px;height:92vh;max-height:900px;position:relative;
+  display:flex;align-items:center;overflow:hidden;
+  background:#06131d;
+}
+.hero-media{position:absolute;inset:0}
+.hero-media img{filter:saturate(.8) contrast(1.05);transform:scale(1.02)}
+.hero-media:after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(90deg,rgba(2,12,20,.96) 0%,rgba(2,12,20,.72) 36%,rgba(2,12,20,.18) 72%,rgba(2,12,20,.48) 100%),
+    linear-gradient(0deg,rgba(2,12,20,.96),transparent 35%,rgba(2,12,20,.25));
+}
+.hero-content{position:relative;z-index:2;padding-top:74px;width:62%}
+.hero h1{
+  font-size:clamp(42px,5.2vw,78px);line-height:1.04;letter-spacing:-.035em;
+  max-width:760px;margin:16px 0 18px;
+}
+.hero h1 span{color:var(--cyan)}
+.hero p{max-width:620px;color:#b5cbd4;line-height:1.75;font-size:15px}
+.cta-row{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{
+  padding:12px 22px;border:1px solid var(--cyan);font-size:12px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;transition:.25s;background:rgba(9,33,46,.55)
+}
+.btn.primary{background:var(--cyan);color:#00131b}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 25px rgba(22,217,255,.2)}
+.corner{
+  position:absolute;width:32px;height:32px;border-color:var(--cyan);opacity:.75;z-index:3
+}
+.corner.tl{top:92px;left:4%;border-top:1px solid;border-left:1px solid}
+.corner.tr{top:92px;right:4%;border-top:1px solid;border-right:1px solid}
+.corner.bl{bottom:24px;left:4%;border-bottom:1px solid;border-left:1px solid}
+.corner.br{bottom:24px;right:4%;border-bottom:1px solid;border-right:1px solid}
+
+/* HUD */
+.hud{
+  position:absolute;z-index:4;right:5%;top:23%;width:310px;
+  padding:22px 22px 16px;background:rgba(2,18,29,.78);
+  border:1px solid rgba(22,217,255,.55);
+  clip-path:polygon(0 0,92% 0,100% 9%,100% 100%,0 100%);
+  box-shadow:0 0 50px rgba(0,0,0,.4),inset 0 0 30px rgba(22,217,255,.04);
+}
+.hud:before{content:"";position:absolute;top:0;right:38px;width:48px;height:2px;background:var(--cyan)}
+.hud-title{font-size:12px;font-weight:800;letter-spacing:.12em;padding-bottom:13px;border-bottom:1px solid var(--line)}
+.hud-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(93,196,231,.14);font-size:11px;color:#a7bbc4}
+.hud-row b{color:var(--cyan);font-size:13px}
+.hud-row .ok{color:var(--green)}
+.hud-icon{
+  width:22px;height:22px;border:1px solid var(--cyan);border-radius:50%;
+  margin-right:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--cyan)
+}
+.hud-label{display:flex;align-items:center}
+
+/* RADAR */
+.radar-wrap{display:grid;grid-template-columns:400px 1fr;gap:70px;align-items:center}
+.radar{
+  width:360px;height:360px;border-radius:50%;position:relative;
+  background:
+    radial-gradient(circle at center,transparent 0 18%,rgba(22,217,255,.03) 18% 19%,transparent 19% 35%,rgba(22,217,255,.04) 35% 36%,transparent 36% 52%,rgba(22,217,255,.04) 52% 53%,transparent 53%),
+    repeating-radial-gradient(circle,transparent 0 42px,rgba(22,217,255,.12) 43px 44px);
+  border:1px solid rgba(22,217,255,.6);
+  box-shadow:0 0 60px rgba(22,217,255,.08);
+}
+.radar:before{
+  content:"";position:absolute;left:50%;top:50%;width:50%;height:1px;
+  transform-origin:left;background:linear-gradient(90deg,var(--cyan),transparent);
+  animation:radar 3.4s linear infinite;
+}
+.radar:after{
+  content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;
+  transform:translate(-50%,-50%);background:var(--cyan);box-shadow:0 0 18px var(--cyan)
+}
+@keyframes radar{to{transform:rotate(360deg)}}
+.target{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+.t1{left:22%;top:30%}.t2{right:20%;top:43%}.t3{left:42%;bottom:18%}.t4{right:32%;bottom:28%}
+.radar-copy h3{font-size:28px;margin:7px 0 10px}
+.radar-copy p{color:var(--muted);line-height:1.8;font-size:13px;max-width:620px}
+.radar-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px}
+.mini-stat{border-top:1px solid var(--line);padding-top:10px}
+.mini-stat b{display:block;color:var(--cyan);font-size:17px}.mini-stat span{font-size:10px;color:var(--muted2);text-transform:uppercase}
+
+/* TECH MATRIX */
+.tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tech-card{
+  min-height:250px;border:1px solid var(--line);background:linear-gradient(150deg,#081d2b,#04111b);
+  position:relative;overflow:hidden;transition:.3s
+}
+.tech-card:hover{transform:translateY(-4px);border-color:rgba(22,217,255,.7)}
+.tech-image{height:138px;position:relative;overflow:hidden;background:#061824}
+.tech-image img{transition:.5s;filter:saturate(.7) brightness(.75)}
+.tech-card:hover .tech-image img{transform:scale(1.05);filter:saturate(1) brightness(.9)}
+.tech-image:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,17,27,.8),transparent 60%)}
+.tech-body{padding:15px}
+.tech-code{color:var(--cyan);font-size:9px;letter-spacing:.14em}
+.tech-body h3{font-size:17px;margin:6px 0}
+.tech-body p{color:var(--muted);font-size:11px;line-height:1.6}
+.swarm-art{
+  position:relative;inset:auto;background:
+    radial-gradient(circle at 25% 35%,rgba(22,217,255,.2),transparent 3%),
+    radial-gradient(circle at 72% 25%,rgba(32,245,160,.2),transparent 3%),
+    linear-gradient(135deg,#06131d,#0a2533);
+}
+.swarm-art svg{width:100%;height:100%}
+
+/* APPLICATIONS */
+.app-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.app-card{height:260px;border:1px solid var(--line);position:relative;overflow:hidden;background:#071923}
+.app-card img{filter:saturate(.75) brightness(.65);transition:.5s}
+.app-card:hover img{transform:scale(1.06);filter:saturate(.95) brightness(.78)}
+.app-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(2,12,20,.95),rgba(2,12,20,.1) 65%)}
+.app-copy{position:absolute;z-index:2;left:16px;right:16px;bottom:16px}
+.app-copy h3{font-size:16px}.app-copy p{font-size:10px;color:#9fb5bf;line-height:1.5;margin-top:5px}
+
+/* DATABASE */
+.split{display:grid;grid-template-columns:1.2fr .9fr;gap:40px}
+.db-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.db-card{border:1px solid var(--line);background:#071a27;overflow:hidden}
+.db-img{height:120px}
+.db-copy{padding:13px}
+.db-copy h3{font-size:17px}.db-copy p{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5}
+.specs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.spec{font-size:9px;border:1px solid rgba(22,217,255,.18);padding:4px 6px;color:#9fb8c2}
+.intel-list{border-top:1px solid var(--line)}
+.intel-item{display:grid;grid-template-columns:38px 1fr 78px;gap:10px;padding:14px 0;border-bottom:1px solid rgba(93,196,231,.14);align-items:center}
+.intel-num{font-size:23px;color:var(--cyan)}
+.intel-item h4{font-size:12px}.intel-item p{font-size:10px;color:var(--muted);margin-top:4px}
+.date{font-size:9px;color:var(--muted2);text-align:right}
+
+
+/* RESEARCH */
+.research-hero{
+  margin-top:30px;
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:18px;
+}
+.research-feature{
+  min-height:360px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(22,217,255,.38);
+  background:
+    radial-gradient(circle at 75% 25%,rgba(22,217,255,.16),transparent 25%),
+    linear-gradient(135deg,#06131d,#0a2432);
+}
+.research-feature:before{
+  content:"RESEARCH // 01";
+  position:absolute;z-index:2;top:18px;left:18px;
+  color:var(--cyan);font-size:9px;letter-spacing:.16em;
+}
+.research-feature:after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(2,12,20,.9),rgba(2,12,20,.25) 70%,rgba(2,12,20,.65));
+}
+.research-feature .feature-grid{
+  position:absolute;inset:0;opacity:.32;
+  background:
+    linear-gradient(rgba(22,217,255,.3) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(22,217,255,.3) 1px,transparent 1px);
+  background-size:35px 35px;
+}
+.research-copy{
+  position:absolute;z-index:3;left:30px;bottom:28px;max-width:580px;
+}
+.research-copy h3{font-size:29px;line-height:1.1;margin:7px 0}
+.research-copy p{color:#a6bdc6;font-size:12px;line-height:1.7;max-width:560px}
+.research-flow{
+  margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+}
+.flow-box{
+  border:1px solid rgba(22,217,255,.25);padding:10px 9px;background:rgba(2,17,27,.7);
+}
+.flow-box b{display:block;color:var(--cyan);font-size:10px}
+.flow-box span{display:block;color:var(--muted);font-size:9px;margin-top:4px}
+.research-stack{display:grid;grid-template-rows:repeat(3,1fr);gap:12px}
+.research-card{
+  border:1px solid var(--line);background:#071a27;padding:19px;
+  position:relative;overflow:hidden;
+}
+.research-card:before{
+  content:"";position:absolute;right:-35px;top:-35px;width:110px;height:110px;
+  border:1px solid rgba(22,217,255,.16);border-radius:50%;
+}
+.research-card .r-code{font-size:9px;color:var(--cyan);letter-spacing:.14em}
+.research-card h3{font-size:16px;margin:6px 0}
+.research-card p{font-size:10px;color:var(--muted);line-height:1.6;max-width:460px}
+.research-card a{display:inline-block;margin-top:10px;color:var(--cyan);font-size:10px}
+.research-grid{
+  margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.paper{
+  border:1px solid var(--line);background:#061722;padding:17px;min-height:170px;
+}
+.paper .tag{
+  display:inline-block;border:1px solid rgba(32,245,160,.25);color:var(--green);
+  padding:4px 6px;font-size:8px;letter-spacing:.08em
+}
+.paper h4{font-size:14px;margin:12px 0 6px}
+.paper p{font-size:10px;color:var(--muted);line-height:1.6}
+.paper a{display:inline-block;margin-top:12px;color:var(--cyan);font-size:9px}
+.research-note{
+  margin-top:15px;padding:12px 14px;border-left:2px solid var(--cyan);
+  background:rgba(22,217,255,.035);font-size:10px;color:var(--muted);line-height:1.6
+}
+@media(max-width:1100px){
+  .research-hero{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .research-flow,.research-grid{grid-template-columns:1fr 1fr}
+}
+
+/* TIMELINE */
+.timeline{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:50px}
+.timeline:before{content:"";position:absolute;left:4%;right:4%;top:24px;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.time{position:relative;padding-top:55px;padding-right:22px}
+.dot{position:absolute;top:17px;left:0;width:15px;height:15px;border:2px solid var(--cyan);border-radius:50%;background:var(--bg);box-shadow:0 0 16px rgba(22,217,255,.6)}
+.time h3{font-size:22px}.time h4{font-size:12px;color:var(--cyan);margin:5px 0}.time p{font-size:10px;color:var(--muted);line-height:1.6}
+
+/* RESOURCES */
+.resources{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.resource{border:1px solid var(--line);padding:14px 10px;background:#061722;text-align:center;transition:.25s}
+.resource:hover{border-color:var(--cyan);transform:translateY(-3px)}
+.resource strong{display:block;font-size:11px}.resource span{font-size:9px;color:var(--muted)}
+
+/* FOOTER */
+footer{padding:34px 0;border-top:1px solid rgba(93,196,231,.12);color:#607b88;font-size:10px}
+.footer-row{display:flex;justify-content:space-between;gap:20px;align-items:center}
+
+/* MOBILE */
+@media(max-width:1100px){
+  .hud{right:3%;width:285px}.hero-content{width:66%}
+  .tech-grid{grid-template-columns:repeat(2,1fr)}
+  .app-grid{grid-template-columns:repeat(3,1fr)}
+  .db-grid{grid-template-columns:repeat(2,1fr)}
+  .resources{grid-template-columns:repeat(4,1fr)}
+  .split{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .nav{height:64px}.nav-links{display:none}.system{font-size:9px}
+  .hero{height:780px;min-height:720px}.hero-content{width:100%;padding-top:80px}
+  .hero h1{font-size:42px}.hero p{font-size:13px}
+  .hud{top:auto;bottom:28px;left:4%;right:4%;width:auto}
+  .radar-wrap{grid-template-columns:1fr;gap:30px}.radar{width:min(330px,88vw);height:min(330px,88vw);margin:auto}
+  .radar-stats{grid-template-columns:repeat(2,1fr)}
+  .tech-grid,.app-grid,.db-grid{grid-template-columns:1fr}
+  .app-card{height:220px}.timeline{grid-template-columns:1fr;gap:25px}.timeline:before{display:none}
+  .time{padding:0 0 0 32px}.dot{left:0;top:2px}
+  .resources{grid-template-columns:repeat(2,1fr)}
+  .footer-row{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#">
+      <span class="brand-mark"></span>
+      <span>DRONE LAB</span>
+    </a>
+    <nav class="nav-links">
+      <a class="active" href="#home">Home</a>
+      <a href="#technology">Technology</a>
+      <a href="#applications">Applications</a>
+      <a href="#database">UAV Database</a>
+      <a href="#research">Research</a>
+      <a href="#future">Future</a>
+    </nav>
+    <div class="system">SYSTEM: <b>ONLINE</b></div>
+  </div>
+</header>
+
+<main id="home">
+<section class="hero">
+  <div class="hero-media">
+    <img src="./assets/hero.jpg" alt="Modern drone in flight">
+  </div>
+  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+
+  <div class="container">
+    <div class="hero-content">
+      <div class="eyebrow">Autonomous Systems / UAV Research</div>
+      <h1>Explore Drone Technology.<br><span>Define the Intelligent Sky.</span></h1>
+      <p>
+        An English-language technology archive covering autonomous flight,
+        AI perception, navigation, swarm intelligence, flight stacks and the
+        real-world systems turning unmanned aircraft into intelligent machines.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="#technology">Explore Technology</a>
+        <a class="btn" href="#research">Read Research</a>
+      </div>
+    </div>
+
+    <aside class="hud" aria-label="UAV control center">
+      <div class="hud-title">UAV CONTROL CENTER</div>
+      <div class="hud-row"><span class="hud-label"><i class="hud-icon">◈</i>ACTIVE UAV</span><b>128,540</b></div>
+      <div class="hud-row"><span class="hud-label"><i class="hud-icon">AI</i>AI MODELS</span><b>856</b></div>
+      <div class="hud-row"><span class="hud-label"><i class="hud-icon">◷</i>FLIGHT HOURS</span><b>42,000,000</b></div>
+      <div class="hud-row"><span class="hud-label"><i class="hud-icon">⌖</i>GPS STATUS</span><b class="ok">LOCKED</b></div>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container radar-wrap">
+    <div class="radar" aria-label="Tactical radar visualization">
+      <span class="target t1"></span><span class="target t2"></span><span class="target t3"></span><span class="target t4"></span>
+    </div>
+    <div class="radar-copy">
+      <div class="eyebrow">Tactical Radar</div>
+      <h3>Autonomous Perception & Decision Systems</h3>
+      <p>
+        Modern UAV autonomy combines perception, localization, planning and
+        control into a continuous loop. The aircraft observes its environment,
+        estimates where it is, predicts what may happen next and selects a safe action.
+      </p>
+      <div class="radar-stats">
+        <div class="mini-stat"><b>360°</b><span>Perception</span></div>
+        <div class="mini-stat"><b>VIO</b><span>Localization</span></div>
+        <div class="mini-stat"><b>AI</b><span>Planning</span></div>
+        <div class="mini-stat"><b>REAL-TIME</b><span>Collision Avoidance</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="technology">
+  <div class="container">
+    <div class="eyebrow">Technology Matrix</div>
+    <h2 class="section-title">Core Technology Stack</h2>
+    <p class="section-subtitle">From onboard perception to open flight-control ecosystems — the building blocks behind autonomous UAVs.</p>
+
+    <div class="tech-grid" style="margin-top:30px">
+      <article class="tech-card">
+        <div class="tech-image"><img src="./assets/ai-vision.jpg" alt="Drone flight"></div>
+        <div class="tech-body"><div class="tech-code">01 / PERCEPTION</div><h3>AI Vision</h3><p>Object detection, tracking, scene understanding and visual decision support for autonomous flight.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image"><img src="./assets/slam-vio.jpg" alt="Drone camera"></div>
+        <div class="tech-body"><div class="tech-code">02 / LOCALIZATION</div><h3>SLAM / VIO</h3><p>Estimate motion and build a map when GPS is weak, unavailable or not reliable enough.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image swarm-art">
+          <svg viewBox="0 0 600 260" aria-label="Swarm AI visualization">
+            <g fill="none" stroke="#16d9ff" stroke-width="1" opacity=".45">
+              <path d="M80 180 L210 85 L340 145 L500 70"/>
+              <path d="M120 65 L260 190 L420 120 L520 200"/>
+              <path d="M70 120 L300 125 L530 115"/>
+            </g>
+            <g fill="#20f5a0">
+              <circle cx="80" cy="180" r="5"/><circle cx="210" cy="85" r="5"/><circle cx="340" cy="145" r="5"/>
+              <circle cx="500" cy="70" r="5"/><circle cx="120" cy="65" r="5"/><circle cx="260" cy="190" r="5"/>
+              <circle cx="420" cy="120" r="5"/><circle cx="520" cy="200" r="5"/><circle cx="70" cy="120" r="5"/>
+              <circle cx="300" cy="125" r="7"/><circle cx="530" cy="115" r="5"/>
+            </g>
+            <g fill="#16d9ff" opacity=".7">
+              <circle cx="300" cy="125" r="25" fill="none" stroke="#16d9ff"/>
+              <circle cx="300" cy="125" r="38" fill="none" stroke="#16d9ff" opacity=".25"/>
+            </g>
+          </svg>
+        </div>
+        <div class="tech-body"><div class="tech-code">03 / MULTI-AGENT</div><h3>Swarm AI</h3><p>Multi-UAV coordination, task allocation, formation control and airspace conflict resolution.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:radial-gradient(circle at 50% 45%,rgba(22,217,255,.25),transparent 35%),linear-gradient(135deg,#06131d,#123246)">
+          <svg viewBox="0 0 600 260" width="100%" height="100%">
+            <rect x="190" y="70" width="220" height="120" rx="12" fill="#08151e" stroke="#16d9ff"/>
+            <text x="300" y="138" text-anchor="middle" fill="#73efff" font-size="34" font-family="Arial">EDGE AI</text>
+            <g stroke="#16d9ff" opacity=".55"><path d="M150 100h40M150 130h40M150 160h40M410 100h40M410 130h40M410 160h40"/></g>
+          </svg>
+        </div>
+        <div class="tech-body"><div class="tech-code">04 / COMPUTE</div><h3>Edge AI</h3><p>Low-latency onboard inference enables responsive perception and decisions without constant cloud connectivity.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:linear-gradient(135deg,#0a1c29,#071018);display:grid;place-items:center">
+          <div style="font-size:42px;font-weight:800;color:#e9f9ff;letter-spacing:-.08em">PX4</div>
+        </div>
+        <div class="tech-body"><div class="tech-code">05 / FLIGHT STACK</div><h3>PX4 Autopilot</h3><p>An open-source flight-control platform used across multicopters, fixed-wing aircraft and autonomous vehicles.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:linear-gradient(135deg,#0c1720,#102d3a);display:grid;place-items:center">
+          <div style="font-size:27px;font-weight:800;color:#dceef3">ArduPilot</div>
+        </div>
+        <div class="tech-body"><div class="tech-code">06 / FLIGHT STACK</div><h3>ArduPilot</h3><p>A mature open autopilot ecosystem supporting Copter, Plane, Rover and a wide range of vehicles.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:linear-gradient(135deg,#06131d,#102b3b);display:grid;place-items:center">
+          <div style="font-size:30px;color:#16d9ff;font-weight:800">MAVLink</div>
+        </div>
+        <div class="tech-body"><div class="tech-code">07 / PROTOCOL</div><h3>MAVLink</h3><p>A lightweight messaging protocol for telemetry, commands and communication between autonomous systems.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:linear-gradient(135deg,#06131d,#19333f);display:grid;place-items:center">
+          <div style="font-size:25px;color:#73efff;font-weight:800">QGroundControl</div>
+        </div>
+        <div class="tech-body"><div class="tech-code">08 / GROUND CONTROL</div><h3>QGroundControl</h3><p>Mission planning, vehicle configuration, map-based operations and flight monitoring.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image" style="background:radial-gradient(circle,#153746,transparent 45%),#06131d;display:grid;place-items:center">
+          <div style="font-size:32px;font-weight:800;color:#e9f9ff">ROS 2</div>
+        </div>
+        <div class="tech-body"><div class="tech-code">09 / ROBOTICS</div><h3>ROS 2</h3><p>A robotics middleware ecosystem for perception, control, simulation and intelligent robot applications.</p></div>
+      </article>
+
+      <article class="tech-card">
+        <div class="tech-image"><img src="./assets/edge-ai.jpg" alt="Drone close-up"></div>
+        <div class="tech-body"><div class="tech-code">10 / DETECTION</div><h3>YOLO</h3><p>Real-time object detection architectures are widely used as a building block for machine perception.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="applications">
+  <div class="container">
+    <div class="eyebrow">Applications</div>
+    <h2 class="section-title">From Sky to Data — Enabling Every Industry</h2>
+    <p class="section-subtitle">UAVs are evolving from remote-controlled aircraft into mobile sensing and automation platforms.</p>
+
+    <div class="app-grid" style="margin-top:30px">
+      <article class="app-card">
+        <img src="./assets/agriculture.jpg" alt="Agricultural drone">
+        <div class="app-copy"><h3>Precision Agriculture</h3><p>Crop monitoring, aerial application, plant-health inspection and field analytics.</p></div>
+      </article>
+      <article class="app-card">
+        <img src="./assets/mapping.jpg" alt="Aerial mapping landscape">
+        <div class="app-copy"><h3>Mapping & Survey</h3><p>Photogrammetry, terrain models, inspection and high-resolution spatial data.</p></div>
+      </article>
+      <article class="app-card">
+        <img src="./assets/urban-airspace.jpg" alt="Aerial city view">
+        <div class="app-copy"><h3>Urban Airspace</h3><p>Infrastructure inspection, situational awareness and emerging low-altitude mobility.</p></div>
+      </article>
+      <article class="app-card">
+        <img src="./assets/delivery.jpg" alt="Commercial drone">
+        <div class="app-copy"><h3>Delivery & Logistics</h3><p>Autonomous last-mile delivery and new models for time-sensitive transport.</p></div>
+      </article>
+      <article class="app-card">
+        <img src="./assets/inspection.jpg" alt="Aerial coastal monitoring">
+        <div class="app-copy"><h3>Inspection & Monitoring</h3><p>Coastlines, power assets, construction sites and hard-to-reach environments.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="database">
+  <div class="container">
+    <div class="eyebrow">UAV Database</div>
+    <h2 class="section-title">Aircraft, Platforms & Autonomy</h2>
+    <p class="section-subtitle">A starting point for exploring leading Chinese UAV companies, platforms, autonomy and real-world applications.</p>
+
+    <div class="split" style="margin-top:30px">
+      <div class="db-grid">
+        <article class="db-card">
+          <div class="db-img"><img src="./assets/dji.jpg" alt="DJI drone"></div>
+          <div class="db-copy"><h3>DJI</h3><p>Shenzhen-based UAV technology company spanning consumer, enterprise, imaging, agriculture and public-safety applications.</p><div class="specs"><span class="spec">Imaging</span><span class="spec">Enterprise</span></div></div>
+        </article>
+        <article class="db-card">
+          <div class="db-img"><img src="./assets/skydio.jpg" alt="Autel Robotics drone"></div>
+          <div class="db-copy"><h3>Autel Robotics</h3><p>Chinese UAV developer focused on multi-rotor and tilt-rotor platforms, autonomous flight, sensing and air-ground collaboration.</p><div class="specs"><span class="spec">AI</span><span class="spec">Autonomy</span></div></div>
+        </article>
+        <article class="db-card">
+          <div class="db-img"><img src="./assets/mapping.jpg" alt="JOUAV industrial UAV"></div>
+          <div class="db-copy"><h3>JOUAV</h3><p>Chengdu-based industrial UAV company specializing in VTOL fixed-wing systems, surveying, mapping, inspection and unattended operations.</p><div class="specs"><span class="spec">VTOL</span><span class="spec">Industrial</span></div></div>
+        </article>
+        <article class="db-card">
+          <div class="db-img"><img src="./assets/agriculture.jpg" alt="XAG agricultural drone"></div>
+          <div class="db-copy"><h3>XAG</h3><p>Chinese agricultural robotics company developing autonomous agricultural drones, ground robots and digital farming systems.</p><div class="specs"><span class="spec">AgTech</span><span class="spec">Robotics</span></div></div>
+        </article>
+      </div>
+
+      <div>
+        <div class="eyebrow">Latest Intelligence</div>
+        <h3 style="font-size:25px;margin:7px 0 20px">Research & Trends</h3>
+        <div class="intel-list">
+          <article class="intel-item"><div class="intel-num">01</div><div><h4>How AI Gives Drone a “Brain”</h4><p>Perception, prediction and autonomous decision loops.</p></div><div class="date">JUN 2026</div></article>
+          <article class="intel-item"><div class="intel-num">02</div><div><h4>From GPS Navigation to Autonomous Flight</h4><p>SLAM, VIO and onboard computing beyond GNSS.</p></div><div class="date">MAY 2026</div></article>
+          <article class="intel-item"><div class="intel-num">03</div><div><h4>Swarm Intelligence Explained</h4><p>Coordination, task allocation and conflict avoidance.</p></div><div class="date">APR 2026</div></article>
+          <article class="intel-item"><div class="intel-num">04</div><div><h4>What Will the Intelligent Sky Look Like?</h4><p>Airspace, autonomy and connected aerial infrastructure.</p></div><div class="date">MAR 2026</div></article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="research">
+  <div class="container">
+    <div class="eyebrow">Research Center</div>
+    <h2 class="section-title">Research the Systems Behind Autonomous Flight</h2>
+    <p class="section-subtitle">
+      A structured research layer for understanding how drones sense, localize,
+      plan, communicate and coordinate — from open-source flight stacks to advanced autonomy.
+    </p>
+
+    <div class="research-hero">
+      <article class="research-feature">
+        <div class="feature-grid"></div>
+        <svg viewBox="0 0 900 500" style="position:absolute;inset:0;width:100%;height:100%;z-index:1" aria-label="Autonomous flight research diagram">
+          <g fill="none" stroke="#16d9ff" stroke-width="1" opacity=".35">
+            <path d="M80 350 C220 230 250 160 410 250 S650 370 820 130"/>
+            <path d="M110 110 C260 180 330 330 510 150 S690 80 820 300"/>
+            <path d="M180 420 L420 250 L690 400"/>
+          </g>
+          <g fill="#20f5a0">
+            <circle cx="80" cy="350" r="6"/><circle cx="410" cy="250" r="7"/><circle cx="820" cy="130" r="6"/>
+            <circle cx="110" cy="110" r="5"/><circle cx="510" cy="150" r="6"/><circle cx="820" cy="300" r="5"/>
+          </g>
+          <g transform="translate(395 220)" fill="none" stroke="#73efff">
+            <rect x="-38" y="-22" width="76" height="44" rx="7"/>
+            <circle cx="0" cy="0" r="10"/>
+            <path d="M-60 -32h-25M60 -32h25M-60 32h-25M60 32h25"/>
+          </g>
+          <text x="470" y="305" fill="#73efff" font-size="12" font-family="Arial" letter-spacing="2">AUTONOMOUS DECISION LOOP</text>
+        </svg>
+        <div class="research-copy">
+          <div class="eyebrow">Research Track / Autonomy</div>
+          <h3>From Sensor Data to Mission Decisions</h3>
+          <p>
+            The research chain connects perception, state estimation, planning and control.
+            Understanding this pipeline makes it easier to compare different UAV architectures
+            and explain why “autonomy” is more than simply adding an AI model.
+          </p>
+          <div class="research-flow">
+            <div class="flow-box"><b>01 / SENSE</b><span>Cameras · IMU · LiDAR</span></div>
+            <div class="flow-box"><b>02 / ESTIMATE</b><span>VIO · SLAM · State</span></div>
+            <div class="flow-box"><b>03 / PLAN</b><span>Routes · Tasks · Safety</span></div>
+            <div class="flow-box"><b>04 / CONTROL</b><span>Flight · Actuation</span></div>
+          </div>
+        </div>
+      </article>
+
+      <div class="research-stack">
+        <article class="research-card">
+          <div class="r-code">RESEARCH 01 / FLIGHT STACKS</div>
+          <h3>PX4 & ArduPilot Architecture</h3>
+          <p>Study estimators, controllers, mission logic, hardware interfaces and companion-computer integration.</p>
+          <a href="https://docs.px4.io/" target="_blank" rel="noopener">Open PX4 Guide →</a>
+          &nbsp;&nbsp;
+          <a href="https://ardupilot.org/ardupilot/" target="_blank" rel="noopener">Open ArduPilot →</a>
+        </article>
+        <article class="research-card">
+          <div class="r-code">RESEARCH 02 / COMMUNICATION</div>
+          <h3>MAVLink & Ground Control</h3>
+          <p>Explore how commands, telemetry, missions and parameters move between aircraft, onboard systems and ground stations.</p>
+          <a href="https://mavlink.io/en/" target="_blank" rel="noopener">Read MAVLink Guide →</a>
+          &nbsp;&nbsp;
+          <a href="https://qgroundcontrol.com/" target="_blank" rel="noopener">QGroundControl →</a>
+        </article>
+        <article class="research-card">
+          <div class="r-code">RESEARCH 03 / AUTONOMY</div>
+          <h3>AI Navigation & Multi-Agent Systems</h3>
+          <p>Compare onboard perception, obstacle avoidance, dynamic planning and coordinated autonomy across multiple aircraft.</p>
+          <a href="https://www.skydio.com/skydio-autonomy/" target="_blank" rel="noopener">Skydio Autonomy →</a>
+          &nbsp;&nbsp;
+          <a href="https://www.anduril.com/lattice/mission-autonomy" target="_blank" rel="noopener">Mission Autonomy →</a>
+        </article>
+      </div>
+    </div>
+
+    <div class="research-grid">
+      <article class="paper">
+        <span class="tag">PERCEPTION</span>
+        <h4>AI Vision for UAVs</h4>
+        <p>Object detection, tracking, depth estimation and scene understanding are the perception layer of autonomous flight.</p>
+        <a href="#technology">Explore AI Vision →</a>
+      </article>
+      <article class="paper">
+        <span class="tag">LOCALIZATION</span>
+        <h4>SLAM / VIO</h4>
+        <p>Research how visual and inertial sensors can estimate motion and build spatial representations in challenging environments.</p>
+        <a href="#technology">Explore SLAM / VIO →</a>
+      </article>
+      <article class="paper">
+        <span class="tag">MULTI-AGENT</span>
+        <h4>Swarm Intelligence</h4>
+        <p>Task allocation, formation control, communication and conflict avoidance become central when one operator supervises many aircraft.</p>
+        <a href="#technology">Explore Swarm AI →</a>
+      </article>
+    </div>
+
+    <div class="research-note">
+      Research links in this section point to official project or company sources. The site uses them as technical references, not as endorsements.
+    </div>
+  </div>
+</section>
+
+<section class="section" id="future">
+  <div class="container">
+    <div class="eyebrow">The Future Sky</div>
+    <h2 class="section-title">A Timeline of Autonomous Flight</h2>
+    <div class="timeline">
+      <article class="time"><i class="dot"></i><h3>2020</h3><h4>GPS Drone Era</h4><p>Remote piloting, waypoint navigation and increasingly capable imaging systems.</p></article>
+      <article class="time"><i class="dot"></i><h3>2025</h3><h4>AI Flight Era</h4><p>Perception, automatic avoidance and onboard intelligence move into mainstream UAVs.</p></article>
+      <article class="time"><i class="dot"></i><h3>2030</h3><h4>Autonomous Sky Network</h4><p>Many aircraft share data, missions and constraints across connected airspace.</p></article>
+      <article class="time"><i class="dot"></i><h3>2040</h3><h4>Intelligent Airspace</h4><p>Aircraft, infrastructure and software coordinate continuously in a digital sky.</p></article>
+      <article class="time"><i class="dot"></i><h3>2050+</h3><h4>Sky as Infrastructure</h4><p>Autonomous aerial networks become a normal layer of transportation and sensing.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="eyebrow">Tech Resources</div>
+    <h2 class="section-title">Technical Resources & References</h2>
+    <div class="resources" style="margin-top:25px">
+      <a class="resource" href="https://px4.io/" target="_blank" rel="noopener"><strong>PX4</strong><span>Autopilot</span></a>
+      <a class="resource" href="https://ardupilot.org/" target="_blank" rel="noopener"><strong>ArduPilot</strong><span>Autopilot</span></a>
+      <a class="resource" href="https://mavlink.io/" target="_blank" rel="noopener"><strong>MAVLink</strong><span>Protocol</span></a>
+      <a class="resource" href="https://qgroundcontrol.com/" target="_blank" rel="noopener"><strong>QGroundControl</strong><span>GCS</span></a>
+      <a class="resource" href="https://www.skydio.com/skydio-autonomy" target="_blank" rel="noopener"><strong>Skydio Autonomy</strong><span>AI Navigation</span></a>
+      <a class="resource" href="https://www.anduril.com/" target="_blank" rel="noopener"><strong>Anduril Lattice</strong><span>Autonomy</span></a>
+      <a class="resource" href="https://wing.com/" target="_blank" rel="noopener"><strong>Wing</strong><span>Delivery</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div>© 2026 DRONE LAB — Autonomous Systems Archive</div>
+    <div>Built for Cloudflare Pages · Static HTML / CSS / JS</div>
+  </div>
+</footer>
+
+<script>
+/* Lightweight HUD motion — no libraries required */
+const hud=document.querySelector('.hud');
+const hero=document.querySelector('.hero');
+if(hud && hero && matchMedia('(pointer:fine)').matches){
+  hero.addEventListener('mousemove',e=>{
+    const r=hero.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    hud.style.transform=`translate(${x*8}px,${y*8}px)`;
+  });
+  hero.addEventListener('mouseleave',()=>hud.style.transform='translate(0,0)');
+}
+
+/* Active navigation state */
+const links=[...document.querySelectorAll('.nav-links a')];
+const sections=[...document.querySelectorAll('main section[id]')];
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+entry.target.id));
+    }
+  });
+},{rootMargin:'-35% 0px -55% 0px'});
+sections.forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>
