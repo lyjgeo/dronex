@@ -14,8 +14,8 @@ window.DRONEX_CONFIG = {
   PHONE_NUMBER: "+8617361220132",
 
   /* 销售邮箱 */
-  SALES_EMAIL: "lyjgeo@gmail.com",
+  SALES_EMAIL: "sales@dronexchina.com",
 
   /* 公司国家 / 城市 */
-  COMPANY_LOCATION: "COMPANY_LOCATION"
+  COMPANY_LOCATION: "China / Cheng Du",
 };
