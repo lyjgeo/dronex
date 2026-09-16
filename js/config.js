@@ -17,5 +17,5 @@ window.DRONEX_CONFIG = {
   SALES_EMAIL: "sales@dronexchina.com",
 
   /* 公司国家 / 城市 */
-  COMPANY_LOCATION: "China / Cheng Du",
+  COMPANY_LOCATION: "China / Hongkong",
 };
