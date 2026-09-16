@@ -31,9 +31,9 @@
         el.setAttribute('href','tel:'+val.replace(/[^0-9+]/g,''));
       }else if(key === 'SALES_EMAIL'){
         el.setAttribute('href','mailto:'+val);
-        if(el.textContent.trim() === key) el.textContent = val;
+        el.textContent = val;
       }else if(key === 'COMPANY_LOCATION'){
-        if(el.textContent.trim() === key) el.textContent = val;
+        el.textContent = val;
       }
     });
   }
